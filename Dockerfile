@@ -3,108 +3,213 @@ FROM alpine:latest
 ARG	MINEMELD_CORE_VERSION=0.9.44.post1
 ARG	MINEMELD_UI_VERSION=0.9.44
 
-RUN	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories &&\
+RUN clear &&\
+	echo -e "\n PaloAlto" &&\
+	echo -e "\e[33m    /|    //||     _                    /|    //||              //      //\e[0m" &&\
+	echo -e "\e[33m   //|   // ||    (_)   __     ___     //|   // ||     ___     //  ___ //\e[0m" &&\
+	echo -e "\e[33m  // |  //  ||   / / //   )) //___)   // |  //  ||   //___)   // //   //\e[0m" &&\
+	echo -e "\e[33m //  | //   ||  / / //   // //       //  | //   ||  //       // //   //\e[0m" &&\
+	echo -e "\e[33m//   |//    || / / //   // ((____   //   |//    || ((____   // ((___//\e[0m" &&\
+	echo -e "\n\n" &&\
+	echo -e "CORE VERSION: $MINEMELD_CORE_VERSION\nUI VERSION: $MINEMELD_UI_VERSION" &&\
+	echo -e "------------------------------------------------------------------------------" &&\
+	echo -n -e "\e[1;0;32m# Create minemeld user\e[0m" &&\
+    adduser minemeld -s /bin/false -D &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+    echo -n -e "\e[1;0;32m# Create minemeld directories\e[0m" &&\
+    mkdir -p -m 0775 /opt/minemeld/engine /opt/minemeld/local /opt/minemeld/log /opt/minemeld/prototypes /opt/minemeld/supervisor /opt/minemeld/www /opt/minemeld/local/certs /opt/minemeld/local/config /opt/minemeld/local/data /opt/minemeld/local/library /opt/minemeld/local/prototypes /opt/minemeld/local/config/traced /opt/minemeld/local/config/api /opt/minemeld/local/trace /opt/minemeld/supervisor/config/conf.d &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+    echo -n -e "\e[1;0;32m# Install packages\e[0m" &&\
+	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories &&\
 	echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories &&\
-	apk --no-cache add apk-tools@edge &&\
-	apk --no-cache upgrade &&\
-	apk --no-cache add c-ares ca-certificates collectd collectd-rrdtool collectd-utils curl cython erlang-asn1 erlang-public-key file leveldb libffi librrd libssl1.0 libxml2 libxslt libressl p7zip py-libxml2 py2-mock py2-openssl py2-pip py2-psutil py2-sphinx py2-netaddr py2-redis py2-netaddr py2-tz py2-certifi py2-click py2-gevent py2-dateutil py2-lxml py2-greenlet py2-urllib3 py2-lz4 py2-yaml python2 rabbitmq-server redis snappy su-exec supervisor tzdata &&\
-	apk --no-cache add -t DEV c-ares-dev cython-dev g++ gcc gdnsd-dev git leveldb-dev libffi-dev libxml2-dev libxslt-dev musl-dev libressl-dev snappy-dev &&\
-# Create minemeld user
-	adduser minemeld -s /bin/false -D &&\
-# Create needed directories and files
-	mkdir -p /etc/minemeld/api /etc/minemeld/certs /etc/minemeld/engine /etc/minemeld/trace /etc/minemeld/library/local /etc/minemeld/supervisor/conf.d/ /var/lib/rabbitmq /var/log/rabbitmq /usr/lib/rabbitmq /data/log /var/run/minemeld /opt/minemeld/www /opt/minemeld/www/venv /opt/minemeld/www/webui /opt/minemeld/engine/current /opt/minemeld/local/prototypes /opt/minemeld/prototypes /opt/minemeld/local /opt/minemeld/local/data /opt/minemeld/local/config /opt/minemeld/local/trace /opt/minemeld/local/library /opt/minemeld/local/certs /opt/minemeld/local/certs/site /opt/minemeld/supervisor /opt/minemeld/engine  &&\
-   	cd /tmp &&\
-	curl -sSL https://github.com/PaloAltoNetworks/minemeld-core/archive/${MINEMELD_CORE_VERSION}.tar.gz | tar xzf - &&\
-	cd minemeld-core-${MINEMELD_CORE_VERSION} &&\
-	echo "Use native Alpine python packages" &&\
-	sed -i 's/gevent==1.0.2/gevent/g' requirements.txt &&\
-	sed -i 's/netaddr==0.7.18/netaddr/g' requirements.txt &&\
-	sed -i 's/click==4.1/click/g' requirements.txt &&\
-	sed -i 's/greenlet==0.4.7/greenlet/g' requirements.txt &&\
-	sed -i 's/lz4==0.8.2/lz4/g' requirements.txt &&\
-	sed -i 's/pytz==2015.4/pytz/g' requirements.txt &&\
-	sed -i 's/PyYAML==3.11/PyYAML/g' requirements.txt &&\
-	sed -i 's/redis==2.10.5/redis/g' requirements.txt &&\
-# Install engine
-	python setup.py install &&\
-# Create config file
-	touch /etc/minemeld/certs/cacert-merge-config.yml &&\
-# Create CA bundle
-#	mm-cacert-merge --config {{certs_directory}}/cacert-merge-config.yml --dst {{certs_directory}}/bundle.crt {{local_ca_directory}} &&\
-# Cleanup
-	rm -rf /tmp/* &&\
-	apk --no-cache del --purge DEV &&\
-	echo 'MINEMELD CORE [DONE]'
-
-RUN apk --no-cache add git &&\
+	apk -U -q add apk-tools@edge &&\
+#	apk upgrade &&\
+	# py-hiredis version on Alpine is very old
+	apk -q --progress add c-ares ca-certificates collectd collectd-rrdtool collectd-utils curl cython erlang-asn1 erlang-public-key file leveldb libffi librrd libssl1.0 libxml2 libxslt libressl p7zip py2-decorator py-libxml2 py2-mock py2-openssl py2-pip py2-psutil py2-sphinx py2-netaddr py2-redis py2-netaddr py2-tz py2-msgpack py2-cffi py2-virtualenv py2-markupsafe py-ethtool py2-itsdangerous py2-certifi py2-click py2-gevent py2-dateutil py2-lxml py2-greenlet py2-urllib3 py2-lz4 py2-yaml py2-gunicorn py2-passlib py2-flask py-flask-passlib py2-flask-login py-rrd py2-zmq python2 rabbitmq-server redis snappy su-exec supervisor tzdata &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m# Get Minemeld prototypes\e[0m" &&\
 	cd /tmp &&\
-# Get Minemeld prototypes
+	echo "Working directory: $(pwd)" &&\
+	apk -q add -t DEV git &&\
 	git clone https://github.com/PaloAltoNetworks/minemeld-node-prototypes.git &&\
-	mv minemeld-node-prototypes/prototypes /etc/minemeld/engine/ &&\
-# Get ancilliary files as per minemeld-ansible repo
+	mkdir -p /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
+	mv minemeld-node-prototypes/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
+    ln -sn /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" /opt/minemeld/prototypes/current &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Get Minemeld-Core\e[0m" &&\
+	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-core/archive/${MINEMELD_CORE_VERSION}.tar.gz" | tar xzf - -C /opt/minemeld/engine/ &&\
+	cd /opt/minemeld/engine &&\
+	mv "minemeld-core-$MINEMELD_CORE_VERSION"/ core &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install dev packages\e[0m" &&\
+	apk -q --progress add -t DEV c-ares-dev cython-dev g++ gcc gdnsd-dev leveldb-dev libffi-dev libxml2-dev libxslt-dev musl-dev libressl-dev snappy-dev rrdtool-dev linux-headers psutils-dev py-setuptools py-py &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo "Use Alpine's native Python packages" &&\
+	sed -i 's/==/>=/g' core/requirements*.txt &&\
+	echo -e "\e[1;0;32m# Create virtualenv\e[0m" &&\
+	echo "Working directory: $(pwd)" &&\
+	virtualenv --system-site-packages /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
+#	virtualenv /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"  &&\
+	chown -R minemeld:minemeld /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
+	chmod -R 0775 /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
+	source /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/bin/activate &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m# Install requirements\e[0m" &&\
+	pip -q install -r /opt/minemeld/engine/core/requirements.txt &&\
+	echo -e "\e[1;0;32m Install requirements [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m# Install web requirements\e[0m" &&\
+	pip -q install -r /opt/minemeld/engine/core/requirements-web.txt &&\
+	echo -e "\e[1;0;32m Install web requirements [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m# Install dev requirements\e[0m" &&\
+	pip -q install -r /opt/minemeld/engine/core/requirements-dev.txt &&\
+	deactivate &&\
+	echo -e "\e[1;0;32m Install dev requirements [✔ ]\e[0m\n\n" &&\
+	echo -e "\e[1;0;32m# Install engine\e[0m" &&\
+	pip -q install -e /opt/minemeld/engine/core &&\
+    ln -sn /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" /opt/minemeld/engine/current &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	rm -rf /tmp/* /var/cache/apk/* &&\
+	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
+	source /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/bin/activate &&\
+	echo -e -n "\e[1;0;32m# Create extensions frigidaire\e[0m" &&\
+	mm-extensions-freeze /opt/minemeld/local/library /opt/minemeld/local/library/freeze.txt &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Create constraints file\e[0m" &&\
+	cd /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
+	/opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/bin/pip freeze /opt/minemeld/engine/core | grep -v minemeld-core > /opt/minemeld/local/library/constraints.txt &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+# Cleanup
+	apk -q del --purge DEV &&\
+	echo -n -e "\e[1;0;32m# Create CA config file\e[0m" &&\
+	echo "# no_merge_certifi: true" >/opt/minemeld/local/certs/cacert-merge-config.yml &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	#echo -n -e "\e[1;0;32m# Create CA bundle\e[0m" &&\
+	#mm-cacert-merge --config /opt/minemeld/local/certs/cacert-merge-config.yml --dst /opt/minemeld/local/certs/bundle.crt /opt/minemeld/local/certs/site/ &&\
+	#echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32mMINEMELD CORE [✔ ✔ ]\e[0m" &&\
+	echo -e "------------------------------------------------------------------------------" &&\
+#########################################################################################
+# MISCELANEOUS FILES
+#########################################################################################
+	echo -e "\e[1;0;32m# Obtain misc files from minemeld-ansible git repo\e[0m" &&\
+	apk --no-cache -q add git &&\
+	cd /tmp &&\
 	git clone https://github.com/PaloAltoNetworks/minemeld-ansible.git &&\
 	mv minemeld-ansible/roles/minemeld/templates/minemeld_types.db.j2 /usr/share/minemeld_types.db &&\
-	mv minemeld-ansible/roles/minemeld/files/committed-config.yml /etc/minemeld/engine/ &&\
-	mv minemeld-ansible/roles/minemeld/files/traced.yml /etc/minemeld/trace/ &&\
-	mv minemeld-ansible/roles/minemeld/files/minemeld.cer /etc/minemeld/certs/ &&\
-	mv minemeld-ansible/roles/minemeld/files/minemeld.pem /etc/minemeld/certs/ &&\
-	mv minemeld-ansible/roles/minemeld/files/wsgi.htpasswd /etc/minemeld/api/ &&\
-	touch /etc/minemeld/api/feeds.htpasswd &&\
+	mv minemeld-ansible/roles/minemeld/files/traced.yml /opt/minemeld/local/config/traced/ &&\
+	mv minemeld-ansible/roles/minemeld/files/wsgi.htpasswd /opt/minemeld/local/config/api/ &&\
+	mv minemeld-ansible/roles/minemeld/files/committed-config.yml /opt/minemeld/local/config/ &&\
+#	touch /opt/minemeld/local/config/api/feeds.htpasswd &&\
 	cd minemeld-ansible/roles/minemeld/templates &&\
-# Config CollectD to output logs to emit warnings STDOUT
+	echo "Working directory: $(pwd)" &&\
+# Config CollectD to output logs to emit warnings to STDOUT
 	sed 's/"\/var\/log\/collectd.log"/STDOUT/' collectd.centos7.conf.j2 | sed 's/info/notice/' | sed 's/Timestamp true/Timestamp false/' >/etc/collectd/collectd.conf &&\
-# Unholy template replacement
-# Web UI stuff
-	sed 's/{{prototypes_local_directory}}:{{prototypes_repo_directory}}\/current\/\/etc\/minemeld\/prototypes/' 10-defaults.yml.j2 | sed 's/{{main_directory}}/\/data/'| sed 's/{{venv_directory}}\/bin\///g'| sed 's/\/usr\/bin\///' > /etc/minemeld/api/10-defaults.yml &&\
+# Unholy template replacement to remain close to PaloAlto Ansible repo
+# General
+	sed -i 's/{{ *main_directory *}}/\/opt\/minemeld/g' * &&\
+	sed -i 's/{{supervisor_directory}}/\/opt\/minemeld\/supervisor/g' * &&\
+	sed -i 's/{{venv_directory}}/\/opt\/minemeld\/engine\/current/g' * &&\
+	sed -i 's/{{engine_directory}}/\/opt\/minemeld\/engine/g' * &&\
+	sed -i 's/{{trace_directory}}/\/opt\/minemeld\/local\/trace/g' * &&\
+	sed -i 's/{{traced_config_directory}}/\/opt\/minemeld\/local\/config\/traced/g' * &&\
+	sed -i 's/{{data_directory}}/\/opt\/minemeld\/local\/data/g' * &&\
+	sed -i 's/{{prototypes_local_directory}}/\/opt\/minemeld\/local\/prototypes/g' * &&\
+	sed -i 's/{{prototypes_repo_directory}}/\/opt\/minemeld\/prototypes/g' * &&\
+	sed -i 's/{{certs_directory}}/\/opt\/minemeld\/local\/certs/g' * &&\
+	sed -i 's/{{config_directory}}/\/opt\/minemeld\/local\/config/g' * &&\
 # Supervisord
-# Rationalise file location for supervisor removing the superfluous "config" directory
-	sed 's/{{main_directory}}/\/data/g' supervisord.conf.j2  | sed 's/{{supervisor_directory}}\/config/\/etc\/minemeld\/supervisor/g' > /etc/minemeld/supervisor/supervisord.conf &&\
-# Listener
-	sed 's/command=.*/command=mm-supervisord-listener/' minemeld-supervisord-listener.supervisord.j2 | sed 's/stderr_logfile=.*/stderr_logfile=\/data\/log\/supervisord-listener.log/' | sed '2ienvironment=HOME=/home/minemeld' | sed '3ipriority=10' >/etc/minemeld/supervisor/conf.d/supervisord-listener.conf &&\
-# Traced
-	sed 's/environment=.*/environment=HOME=\/home\/minemeld/' minemeld-traced.supervisord.j2 | sed 's/command=.*/command=mm-traced \/etc\/minemeld\/trace\/traced.yml/' | sed 's/directory=.*/directory=\/data/' | sed 's/stdout_logfile=.*/stdout_logfile=\/data\/log\/traced.log/' | sed '3ipriority=100' | sed '4istartsecs=15' >/etc/minemeld/supervisor/conf.d/traced.conf &&\
-# Engine
-	sed 's/environment=.*/environment=HOME=\/home\/minemeld,MINEMELD_PROTOTYPE_PATH=\/etc\/minemeld\/engine\/prototypes/' minemeld-engine.supervisord.j2 | sed 's/command=.*/command=mm-run \/etc\/minemeld\/engine/' | sed 's/directory=.*/directory=\/data/' |sed 's/stdout_logfile=.*/stdout_logfile=\/data\/log\/engine.log/'| sed '3ipriority=900' >/etc/minemeld/supervisor/conf.d/engine.conf &&\
-# Web
-	sed 's/environment=.*/environment=HOME=\/home\/minemeld,MM_CONFIG=\/etc\/minemeld,MINEMELD_PROTOTYPE_PATH=\/etc\/minemeld\/engine\/prototypes,MINEMELD_LOCAL_LIBRARY_PATH=\/etc\/minemeld\/library/' minemeld-web.supervisord.j2 | sed 's/{{venv_directory}}\/bin\///' | sed 's/directory=.*/directory=\/data/' | sed 's/stdout_logfile=.*/stdout_logfile=\/data\/log\/web.log/' >/etc/minemeld/supervisor/conf.d/web.conf &&\
+	mv supervisord.conf.j2 /opt/minemeld/supervisor/config/supervisord.conf &&\
+#  Listener
+	sed '2ienvironment=HOME=/home/minemeld' minemeld-supervisord-listener.supervisord.j2 | sed '3ipriority=10' >/opt/minemeld/supervisor/config/conf.d/supervisord-listener.conf &&\
+#  Traced
+	sed '3ipriority=100' minemeld-traced.supervisord.j2  | sed '4istartsecs=10' >/opt/minemeld/supervisor/config/conf.d/traced.conf &&\
+#  Engine
+	sed '3ipriority=900' minemeld-engine.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/engine.conf &&\
+#  Web
+	sed '4istartsecs=5' minemeld-web.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/web.conf &&\
+# NGINX config file
+	sed  's/{{www_directory}}/\/opt\/minemeld\/www/g' minemeld-web.nginx.j2 >/opt/minemeld/www/minemeld-web.nginx.conf &&\
+# API Defaults
+	mv 10-defaults.yml.j2 /opt/minemeld/local/config/api/ &&\
 # Cleanup
-	apk --no-cache del --purge git &&\
-    rm -rf /tmp/* &&\
-	echo 'ANSIBLE FILES [DONE]'
-
-RUN mkdir -p /var/www/webui &&\
-	curl -sSL https://github.com/PaloAltoNetworks/minemeld-webui/archive/${MINEMELD_UI_VERSION}.tar.gz | tar xzf - -C /tmp &&\
-	mv /tmp/minemeld-webui-${MINEMELD_UI_VERSION}/src/* /var/www/webui/ &&\
-	mm-extensions-freeze /etc/minemeld/library/ /etc/minemeld/library/freeze.txt &&\
-	pip freeze | grep -v minemeld-core >/etc/minemeld/library/constraints.txt &&\
-# Add webservers
-	apk --no-cache add py2-gunicorn py2-flask py-flask-passlib py2-flask-login py-rrd &&\
+#	sed -i 's/command=\/opt\/minemeld\/engine\/current\/bin\/command=//' /opt/minemeld/supervisor/config/conf.d/*.conf &&\
+	sed -i 's/"//g' /opt/minemeld/supervisor/config/conf.d/*.conf &&\
+	apk -q --no-cache del --purge git &&\
+	rm -rf /tmp/* &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "------------------------------------------------------------------------------"
+##########################################################################################
+# WEB UI
+##########################################################################################
+RUN	echo -n -e "\e[1;0;32m# Get Minemeld Web UI\e[0m" &&\
+	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-webui/archive/${MINEMELD_UI_VERSION}.tar.gz" | tar xzf - -C /opt/minemeld/www &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m# Install Minemeld Web UI\e[0m" &&\
+	apk -q --progress --no-cache add -t DEV_WEBUI git g++ libsass libsass-dev nodejs nodejs-npm&&\
+	cd /opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION} &&\
+	echo "Working directory: $(pwd)" &&\
+	echo ' * Running npm' &&\
+    npm install -g &&\
+    echo ' * Doing the bower thing' &&\
+    bower install --allow-root &&\
+    echo -n ' * Installing typings' &&\
+    typings install &&\
+    echo ' * Checking for vulnerabilities' &&\
+    nsp check &&\
+    echo ' * Running gulp' &&\
+    gulp build &&\
+	mkdir -p /opt/minemeld/www/"$MINEMELD_CORE_VERSION" &&\
+    ln -ns /opt/minemeld/www/"$MINEMELD_CORE_VERSION"/dist /opt/minemeld/www/current &&\
+	chown minemeld: /opt/minemeld/www &&\
 # Cleanup
-    rm -rf /tmp/* &&\
-	echo 'MINEMELD WEB UI [DONE]'
+	rm -rf /tmp/* &&\
+    apk -q --no-cache del --purge DEV_WEBUI &&\
+	echo -e "\e[1;0;32m [✔ ✔ ]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install webapp dependencies\e[0m" &&\
+	apk --no-cache -q --progress add py2-gunicorn py2-passlib py2-flask py-flask-passlib py2-flask-login py-rrd &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install web server\e[0m" &&\
+	apk -q --no-cache --progress add nginx &&\
+	mkdir -p /var/run/nginx &&\
+	cp /opt/minemeld/local/certs/* /etc/nginx &&\
+	mv /opt/minemeld/www/minemeld-web.nginx.conf /etc/nginx/conf.d/minemeld-web &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo ' * Disable global ssl session cache'  &&\
+	sed -i 's/ssl_session_cache.*//' /etc/nginx/nginx.conf &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "------------------------------------------------------------------------------"
 
 # Add CA bundle
-COPY bundle.crt /etc/minemeld/certs/
+COPY bundle.crt /opt/minemeld/local/certs/
+
 # Apply correct ownership
-RUN	chown -R minemeld: /etc/minemeld /data /var/run/minemeld &&\
+RUN	echo -n -e "\e[1;0;32m# Fixing permissions\e[0m" &&\
+	mkdir -m 0755 -p /var/run/minemeld/ &&\
+	chown -R minemeld: /opt/minemeld /var/run/minemeld &&\
 	chown -R rabbitmq: /var/lib/rabbitmq /var/log/rabbitmq /usr/lib/rabbitmq &&\
-	echo 'PERMISSIONS FIX [DONE]'
+	chmod 0644 /etc/collectd/collectd.conf &&\
+#	chmod 0600 /opt/minemeld/local/certs/*.pem &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "------------------------------------------------------------------------------"
 
 ARG	CONTAINERPILOT_VERSION=3.6.2
-RUN	apk --no-cache add attr &&\
-	curl -sSL https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz | tar xzf - -C /usr/local/bin &&\
+RUN	echo -n -e "\e[1;0;32m# Installing Containerpilot\e[0m" &&\
+	curl -sSL "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz" | tar xzf - -C /usr/local/bin &&\
 # Create healthcheck scripts for Containerpilot
 	echo -e "#!/bin/sh\nredis-cli ping >/dev/null 2>&1" >/usr/local/bin/redis-healthcheck &&\
 	echo -e "#!/bin/sh\nrabbitmqctl node_health_check >/dev/null 2>&1" >/usr/local/bin/rabbitmq-healthcheck &&\
 	echo -e "#!/bin/sh\ncollectdctl -s \$(awk '/SocketFile/{ print substr(\$2,2,length(\$2)-2) }' /etc/collectd/collectd.conf) listval >/dev/null 2>&1" >/usr/local/bin/collectd-healthcheck &&\
+# Create prestart script to fix GRSEC errors
 	echo -e "#!/bin/sh\nsetfattr -n user.pax.flags -v E $(which python) /usr/lib/libffi.so.6.0.4" >/usr/local/bin/prestart.sh &&\
 	chmod +x /usr/local/bin/* &&\
-	echo 'CONTAINERPILOT [DONE]'
+	apk -q --progress --no-cache add attr &&\
+	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "------------------------------------------------------------------------------"
 
 # Add Redis configuration files
 COPY redis.conf /etc/
 # Add Containerpilot config file
-COPY containerpilot-minemeld.json5 /etc/
+COPY minemeld.json5 /etc/
 
-#ENTRYPOINT ["containerpilot", "-config", "/etc/containerpilot-minemeld.json5"]
+#ENTRYPOINT ["containerpilot", "-config", "/etc/minemeld.json5"]
