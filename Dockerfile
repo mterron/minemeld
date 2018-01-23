@@ -13,13 +13,14 @@ RUN clear &&\
 	echo -e "\n\n" &&\
 	echo -e "CORE VERSION: $MINEMELD_CORE_VERSION\nUI VERSION: $MINEMELD_UI_VERSION" &&\
 	echo -e "------------------------------------------------------------------------------" &&\
+	echo -e "\e[1;0;32mINSTALL MINEMELD ENGINE\e[0m" &&\
 	echo -n -e "\e[1;0;32m# Create minemeld user\e[0m" &&\
     adduser minemeld -s /bin/false -D &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
     echo -n -e "\e[1;0;32m# Create minemeld directories\e[0m" &&\
     mkdir -p -m 0775 /opt/minemeld/engine /opt/minemeld/local /opt/minemeld/log /opt/minemeld/prototypes /opt/minemeld/supervisor /opt/minemeld/www /opt/minemeld/local/certs /opt/minemeld/local/config /opt/minemeld/local/data /opt/minemeld/local/library /opt/minemeld/local/prototypes /opt/minemeld/local/config/traced /opt/minemeld/local/config/api /opt/minemeld/local/trace /opt/minemeld/supervisor/config/conf.d &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
-    echo -n -e "\e[1;0;32m# Install packages\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+    echo -n -e "\e[1;0;32m# Install infrastructure and MineMeld engine dependencies\e[0m" &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories &&\
 	echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories &&\
@@ -27,7 +28,7 @@ RUN clear &&\
 #	apk upgrade &&\
 	# py-hiredis version on Alpine is very old
 	apk -q --progress add c-ares ca-certificates collectd collectd-rrdtool collectd-utils curl cython erlang-asn1 erlang-public-key file leveldb libffi librrd libssl1.0 libxml2 libxslt libressl p7zip py2-decorator py-libxml2 py2-mock py2-openssl py2-pip py2-psutil py2-sphinx py2-netaddr py2-redis py2-netaddr py2-tz py2-msgpack py2-cffi py2-virtualenv py2-markupsafe py-ethtool py2-itsdangerous py2-certifi py2-click py2-gevent py2-dateutil py2-lxml py2-greenlet py2-urllib3 py2-lz4 py2-yaml py2-gunicorn py2-passlib py2-flask py-flask-passlib py2-flask-login py-rrd py2-zmq python2 rabbitmq-server redis snappy su-exec supervisor tzdata &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -e "\e[1;0;32m# Get Minemeld prototypes\e[0m" &&\
 	cd /tmp &&\
 	echo "Working directory: $(pwd)" &&\
@@ -36,15 +37,15 @@ RUN clear &&\
 	mkdir -p /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
 	mv minemeld-node-prototypes/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
     ln -sn /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" /opt/minemeld/prototypes/current &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -n -e "\e[1;0;32m# Get Minemeld-Core\e[0m" &&\
 	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-core/archive/${MINEMELD_CORE_VERSION}.tar.gz" | tar xzf - -C /opt/minemeld/engine/ &&\
 	cd /opt/minemeld/engine &&\
 	mv "minemeld-core-$MINEMELD_CORE_VERSION"/ core &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -n -e "\e[1;0;32m# Install dev packages\e[0m" &&\
 	apk -q --progress add -t DEV c-ares-dev cython-dev g++ gcc gdnsd-dev leveldb-dev libffi-dev libxml2-dev libxslt-dev musl-dev libressl-dev snappy-dev rrdtool-dev linux-headers psutils-dev py-setuptools py-py &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo "Use Alpine's native Python packages" &&\
 	sed -i 's/==/>=/g' core/requirements*.txt &&\
 	echo -e "\e[1;0;32m# Create virtualenv\e[0m" &&\
@@ -54,40 +55,40 @@ RUN clear &&\
 	chown -R minemeld:minemeld /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
 	chmod -R 0775 /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
 	source /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/bin/activate &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
-	echo -e "\e[1;0;32m# Install requirements\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install requirements\e[0m" &&\
 	pip -q install -r /opt/minemeld/engine/core/requirements.txt &&\
-	echo -e "\e[1;0;32m Install requirements [✔ ]\e[0m" &&\
-	echo -e "\e[1;0;32m# Install web requirements\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install web requirements\e[0m" &&\
 	pip -q install -r /opt/minemeld/engine/core/requirements-web.txt &&\
-	echo -e "\e[1;0;32m Install web requirements [✔ ]\e[0m" &&\
-	echo -e "\e[1;0;32m# Install dev requirements\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install dev requirements\e[0m" &&\
 	pip -q install -r /opt/minemeld/engine/core/requirements-dev.txt &&\
 	deactivate &&\
-	echo -e "\e[1;0;32m Install dev requirements [✔ ]\e[0m\n\n" &&\
-	echo -e "\e[1;0;32m# Install engine\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install engine\e[0m" &&\
 	pip -q install -e /opt/minemeld/engine/core &&\
     ln -sn /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" /opt/minemeld/engine/current &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	rm -rf /tmp/* /var/cache/apk/* &&\
 	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
 	source /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/bin/activate &&\
 	echo -e -n "\e[1;0;32m# Create extensions frigidaire\e[0m" &&\
 	mm-extensions-freeze /opt/minemeld/local/library /opt/minemeld/local/library/freeze.txt &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -n -e "\e[1;0;32m# Create constraints file\e[0m" &&\
 	cd /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
 	/opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/bin/pip freeze /opt/minemeld/engine/core | grep -v minemeld-core > /opt/minemeld/local/library/constraints.txt &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 # Cleanup
 	apk -q del --purge DEV &&\
 	echo -n -e "\e[1;0;32m# Create CA config file\e[0m" &&\
 	echo "# no_merge_certifi: true" >/opt/minemeld/local/certs/cacert-merge-config.yml &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	#echo -n -e "\e[1;0;32m# Create CA bundle\e[0m" &&\
 	#mm-cacert-merge --config /opt/minemeld/local/certs/cacert-merge-config.yml --dst /opt/minemeld/local/certs/bundle.crt /opt/minemeld/local/certs/site/ &&\
-	#echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
-	echo -e "\e[1;0;32mMINEMELD CORE [✔ ✔ ]\e[0m" &&\
+	#echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -e "\e[1;0;32mMINEMELD CORE [✔✔]\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------" &&\
 #########################################################################################
 # MISCELANEOUS FILES
@@ -137,47 +138,53 @@ RUN clear &&\
 	sed -i 's/"//g' /opt/minemeld/supervisor/config/conf.d/*.conf &&\
 	apk -q --no-cache del --purge git &&\
 	rm -rf /tmp/* &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 ##########################################################################################
 # WEB UI
 ##########################################################################################
-RUN	echo -n -e "\e[1;0;32m# Get Minemeld Web UI\e[0m" &&\
-	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-webui/archive/${MINEMELD_UI_VERSION}.tar.gz" | tar xzf - -C /opt/minemeld/www &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
-	echo -e "\e[1;0;32m# Install Minemeld Web UI\e[0m" &&\
-	apk -q --progress --no-cache add -t DEV_WEBUI git g++ libsass libsass-dev nodejs nodejs-npm&&\
-	cd /opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION} &&\
-	echo "Working directory: $(pwd)" &&\
-	echo ' * Running npm' &&\
-    npm install -g &&\
-    echo ' * Doing the bower thing' &&\
+RUN	echo -e "\e[1;0;32mINSTALL WEB UI\e[0m" &&\
+	echo -e "\e[1;0;32m# Install npm packages\e[0m" &&\
+	apk -q --progress add --no-cache -t DEV_WEBUI nodejs nodejs-npm git g++ libsass libsass-dev &&\
+#    npm install -g npm@latest &&\
+#    apk add --no-cache -t DEV_WEBUI nodejs-current &&\
+    mkdir -p /var/www/webui &&\
+    curl -sSL https://github.com/PaloAltoNetworks/minemeld-webui/archive/${MINEMELD_UI_VERSION}.tar.gz | tar xzf - -C /opt/minemeld/www &&\
+    cd  /opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION} &&\
+    npm --quiet install &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -e "\e[1;0;32m# Install Bower components\e[0m" &&\
+	export PATH="$PATH:/opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION}/node_modules/.bin/" &&\
     bower install --allow-root &&\
-    echo -n ' * Installing typings' &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Installing typings\e[0m" &&\
     typings install &&\
-    echo ' * Checking for vulnerabilities' &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+    echo -e "\e[1;0;32m# Checking for vulnerabilitiess\e[0m" &&\
     nsp check &&\
-    echo ' * Running gulp' &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	echo -e "\e[1;0;32m# Gulp build\e[0m" &&\
     gulp build &&\
-	mkdir -p /opt/minemeld/www/"$MINEMELD_CORE_VERSION" &&\
-    ln -ns /opt/minemeld/www/"$MINEMELD_CORE_VERSION"/dist /opt/minemeld/www/current &&\
-	chown minemeld: /opt/minemeld/www &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
+	ln -s "/opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION}/dist" /opt/minemeld/www/current &&\
 # Cleanup
-	rm -rf /tmp/* &&\
     apk -q --no-cache del --purge DEV_WEBUI &&\
-	echo -e "\e[1;0;32m [✔ ✔ ]\e[0m" &&\
-	echo -n -e "\e[1;0;32m# Install webapp dependencies\e[0m" &&\
+	echo -e "\e[1;0;32m [✔✔]\e[0m" &&\
+	echo -e "------------------------------------------------------------------------------"
+
+RUN	echo -e "\e[1;0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
+	echo -n -e "\e[1;0;32m# Install webapp webserver dependencies\e[0m" &&\
 	apk --no-cache -q --progress add py2-gunicorn py2-passlib py2-flask py-flask-passlib py2-flask-login py-rrd &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -n -e "\e[1;0;32m# Install web server\e[0m" &&\
 	apk -q --no-cache --progress add nginx &&\
 	mkdir -p /var/run/nginx &&\
 	cp /opt/minemeld/local/certs/* /etc/nginx &&\
 	mv /opt/minemeld/www/minemeld-web.nginx.conf /etc/nginx/conf.d/minemeld-web &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo ' * Disable global ssl session cache'  &&\
 	sed -i 's/ssl_session_cache.*//' /etc/nginx/nginx.conf &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
 # Add CA bundle
@@ -190,7 +197,7 @@ RUN	echo -n -e "\e[1;0;32m# Fixing permissions\e[0m" &&\
 	chown -R rabbitmq: /var/lib/rabbitmq /var/log/rabbitmq /usr/lib/rabbitmq &&\
 	chmod 0644 /etc/collectd/collectd.conf &&\
 #	chmod 0600 /opt/minemeld/local/certs/*.pem &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
 ARG	CONTAINERPILOT_VERSION=3.6.2
@@ -203,8 +210,8 @@ RUN	echo -n -e "\e[1;0;32m# Installing Containerpilot\e[0m" &&\
 # Create prestart script to fix GRSEC errors
 	echo -e "#!/bin/sh\nsetfattr -n user.pax.flags -v E $(which python) /usr/lib/libffi.so.6.0.4" >/usr/local/bin/prestart.sh &&\
 	chmod +x /usr/local/bin/* &&\
-	apk -q --progress --no-cache add attr &&\
-	echo -e "\e[1;0;32m [✔ ]\e[0m" &&\
+	apk -q --no-cache add attr &&\
+	echo -e "\e[1;0;32m [✔]\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
 # Add Redis configuration files
