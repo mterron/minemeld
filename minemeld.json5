@@ -97,7 +97,7 @@
 		},
 		{
 			name: "minemeld-shutdown",
-			exec: "supervisorctl -c /etc/minemeld/supervisor/supervisord.conf stop all",
+			exec: "supervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf stop all",
 			stopTimeout: "30s",
 			restarts: "never",
 			when: {
@@ -109,6 +109,10 @@
 			name: "web",
 			exec: "nginx",
 			restarts: "unlimited",
+			when: {
+				source: "minemeld",
+				once: "healthy"
+			}
 		}
 	]
 }
