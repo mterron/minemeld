@@ -72,6 +72,7 @@ RUN clear &&\
 
 
 RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
+	export PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages &&\
 # This doesn't work. For some reason it doesn't see the system packages even though they are in the PYTHONPATH and can be imported by python
 	echo -e -n "\e[0;32m- Create extensions frigidaire\e[0m" &&\
 	mm-extensions-freeze /opt/minemeld/local/library /opt/minemeld/local/library/freeze.txt &&\
