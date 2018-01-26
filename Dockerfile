@@ -3,6 +3,7 @@ FROM alpine:latest
 ARG	MINEMELD_CORE_VERSION=0.9.44.post1
 ARG	MINEMELD_UI_VERSION=0.9.44
 
+
 RUN clear &&\
 	echo -e "\n PaloAlto" &&\
 	echo -e "\e[1;33m    /|    //||     _                    /|    //||              //      //\e[0m" &&\
@@ -46,8 +47,6 @@ RUN clear &&\
 	apk -q --progress add -t DEV c-ares-dev cython cython-dev g++ gcc gdnsd-dev leveldb-dev libffi-dev libxml2-dev libxslt-dev musl-dev openssl-dev snappy-dev rrdtool-dev linux-headers python-dev &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Install engine requirements\e[0m" &&\
-	mkdir -p -m 0775 /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
-	chown -R minemeld:minemeld /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
 	sed -i 's/==.*//g' /opt/minemeld/engine/core/requirements* &&\
 	sed -i 's/antlr4-python2-runtime/antlr4-python2-runtime==4.5.2/' /opt/minemeld/engine/core/requirements* &&\
 	sed -i 's/greenlet/greenlet==0.4.7/' /opt/minemeld/engine/core/requirements* &&\
@@ -62,17 +61,23 @@ RUN clear &&\
 	pip install -q -r /opt/minemeld/engine/core/requirements-dev.txt &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Install engine...\e[0m" &&\
-	pip install -e /opt/minemeld/engine/core &&\
+	mkdir -p -m 0775 /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/lib/python2.7/site-packages &&\
+	PYTHONPATH=/opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/lib/python2.7/site-packages pip install -e /opt/minemeld/engine/core --prefix=/opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
+	chown -R minemeld:minemeld /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
     ln -sn /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" /opt/minemeld/engine/current &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 # Cleanup
 	rm -rf /tmp/* /var/cache/apk/* &&\
 	apk -q del --purge DEV
+
+#ENV	PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages:/usr/lib/python2.7/site-packages
+
 RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
+	export PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages &&\
 # This doesn't work. For some reason it doesn't see the system packages even though they are in the PYTHONPATH and can be imported by python
-	#echo -e -n "\e[0;32m- Create extensions frigidaire\e[0m" &&\
-	#mm-extensions-freeze /opt/minemeld/local/library /opt/minemeld/local/library/freeze.txt &&\
-	#echo -e "\e[1;32m  ✔\e[0m" &&\
+	echo -e -n "\e[0;32m- Create extensions frigidaire\e[0m" &&\
+	mm-extensions-freeze /opt/minemeld/local/library /opt/minemeld/local/library/freeze.txt &&\
+	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Create constraints file\e[0m" &&\
 	pip freeze /opt/minemeld/engine/core 2>/dev/null | grep -v minemeld-core > /opt/minemeld/local/library/constraints.txt &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
@@ -96,8 +101,8 @@ RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 	sed 's/"\/var\/log\/collectd.log"/STDOUT/' collectd.centos7.conf.j2 | sed 's/info/notice/' | sed 's/Timestamp true/Timestamp false/' >/etc/collectd/collectd.conf &&\
 # Unholy template replacement to remain close to PaloAlto Ansible repo
 # General
-	sed -i 's/PATH="{{venv_directory}}\/bin",//g' *.supervisord.j2 &&\
-	sed -i 's/command="*{{venv_directory}}"*\/bin\//command=/g' *.supervisord.j2 &&\
+#	sed -i 's/PATH="{{venv_directory}}\/bin",//g' *.supervisord.j2 &&\
+	sed -i 's/command="*{{venv_directory}}"*\/bin\//command=/g' minemeld-web.supervisord.j2 &&\
 	sed -i 's/{{ *main_directory *}}/\/opt\/minemeld/g' * &&\
 	sed -i 's/{{supervisor_directory}}/\/opt\/minemeld\/supervisor/g' * &&\
 	sed -i 's/{{venv_directory}}/\/opt\/minemeld\/engine\/current/g' * &&\
@@ -114,7 +119,6 @@ RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 #  Traced
 	sed '3ipriority=100' minemeld-traced.supervisord.j2 | sed '4istartsecs=20' >/opt/minemeld/supervisor/config/conf.d/traced.conf &&\
 #  Engine
-#	sed '3ipriority=900' minemeld-engine.supervisord.j2 | sed 's/\(environment=.*\)/\1,PYTHONPATH=$PYTHONPATH:/opt/minemeld/engine/' >/opt/minemeld/supervisor/config/conf.d/engine.conf &&\
 	sed '3ipriority=900' minemeld-engine.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/engine.conf &&\
 #  Web
 	sed '4istartsecs=20' minemeld-web.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/web.conf &&\
