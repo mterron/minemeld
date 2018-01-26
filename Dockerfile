@@ -120,7 +120,7 @@ RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 # Engine
 	sed '3ipriority=900' minemeld-engine.supervisord.j2 | sed -E 's/(environment=.*)/\1,PYTHONPATH=\/opt\/minemeld\/engine\/current\/lib\/python2.7\/site-packages/'>/opt/minemeld/supervisor/config/conf.d/engine.conf &&\
 # Web
-	sed '4istartsecs=20' minemeld-web.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/web.conf &&\
+	sed '4istartsecs=20' minemeld-web.supervisord.j2 | sed -E 's/(environment=.*)/\1,PYTHONPATH=\/opt\/minemeld\/engine\/current\/lib\/python2.7\/site-packages/' >/opt/minemeld/supervisor/config/conf.d/web.conf &&\
 # NGINX config file
 	sed 's/{{www_directory}}/\/opt\/minemeld\/www/g' minemeld-web.nginx.j2 >/opt/minemeld/www/minemeld-web.nginx.conf &&\
 # API Defaults
