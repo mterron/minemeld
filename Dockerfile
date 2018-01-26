@@ -82,9 +82,9 @@ RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
 	echo -n -e "\e[0;32m- Create CA config file\e[0m" &&\
 	echo "# no_merge_certifi: true" >/opt/minemeld/local/certs/cacert-merge-config.yml &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-	#echo -n -e "\e[0;32m- Create CA bundle\e[0m" &&\
-	#mm-cacert-merge --config /opt/minemeld/local/certs/cacert-merge-config.yml --dst /opt/minemeld/local/certs/bundle.crt /opt/minemeld/local/certs/site/ &&\
-	#echo -e "\e[1;32m  ✔\e[0m" &&\
+#	echo -n -e "\e[0;32m- Create CA bundle\e[0m" &&\
+#	mm-cacert-merge --config /opt/minemeld/local/certs/cacert-merge-config.yml --dst /opt/minemeld/local/certs/bundle.crt /opt/minemeld/local/certs/site/ &&\
+#	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 #########################################################################################
 # MISCELLANEOUS FILES
@@ -112,13 +112,13 @@ RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 	sed -i 's/{{prototypes_repo_directory}}/\/opt\/minemeld\/prototypes/g' * &&\
 	sed -i 's/{{certs_directory}}/\/opt\/minemeld\/local\/certs/g' * &&\
 	sed -i 's/{{config_directory}}/\/opt\/minemeld\/local\/config/g' * &&\
-#  Listener
+# Listener
 	sed '2ienvironment=HOME=/home/minemeld,PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages' minemeld-supervisord-listener.supervisord.j2 | sed '3ipriority=10' >/opt/minemeld/supervisor/config/conf.d/supervisord-listener.conf &&\
-#  Traced
+# Traced
 	sed '3ipriority=100' minemeld-traced.supervisord.j2 | sed '4istartsecs=20' | sed -E 's/(PYTHONPATH=.*),/\1\/current\/lib\/python2.7\/site-packages,/' >/opt/minemeld/supervisor/config/conf.d/traced.conf &&\
-#  Engine
+# Engine
 	sed '3ipriority=900' minemeld-engine.supervisord.j2 | sed -E 's/(environment=.*)/\1,PYTHONPATH=\/opt\/minemeld\/engine\/current\/lib\/python2.7\/site-packages/'>/opt/minemeld/supervisor/config/conf.d/engine.conf &&\
-#  Web
+# Web
 	sed '4istartsecs=20' minemeld-web.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/web.conf &&\
 # NGINX config file
 	sed 's/{{www_directory}}/\/opt\/minemeld\/www/g' minemeld-web.nginx.j2 >/opt/minemeld/www/minemeld-web.nginx.conf &&\
