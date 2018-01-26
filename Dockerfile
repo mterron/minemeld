@@ -70,10 +70,8 @@ RUN clear &&\
 	rm -rf /tmp/* /var/cache/apk/* &&\
 	apk -q del --purge DEV
 
-#ENV	PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages:/usr/lib/python2.7/site-packages
 
 RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
-	export PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages &&\
 # This doesn't work. For some reason it doesn't see the system packages even though they are in the PYTHONPATH and can be imported by python
 	echo -e -n "\e[0;32m- Create extensions frigidaire\e[0m" &&\
 	mm-extensions-freeze /opt/minemeld/local/library /opt/minemeld/local/library/freeze.txt &&\
@@ -115,11 +113,11 @@ RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 	sed -i 's/{{certs_directory}}/\/opt\/minemeld\/local\/certs/g' * &&\
 	sed -i 's/{{config_directory}}/\/opt\/minemeld\/local\/config/g' * &&\
 #  Listener
-	sed '2ienvironment=HOME=/home/minemeld' minemeld-supervisord-listener.supervisord.j2 | sed '3ipriority=10' >/opt/minemeld/supervisor/config/conf.d/supervisord-listener.conf &&\
+	sed '2ienvironment=HOME=/home/minemeld,PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages' minemeld-supervisord-listener.supervisord.j2 | sed '3ipriority=10' >/opt/minemeld/supervisor/config/conf.d/supervisord-listener.conf &&\
 #  Traced
-	sed '3ipriority=100' minemeld-traced.supervisord.j2 | sed '4istartsecs=20' >/opt/minemeld/supervisor/config/conf.d/traced.conf &&\
+	sed '3ipriority=100' minemeld-traced.supervisord.j2 | sed '4istartsecs=20' | sed -E 's/(PYTHONPATH=.*),/\1\/current\/lib\/python2.7\/site-packages,/' >/opt/minemeld/supervisor/config/conf.d/traced.conf &&\
 #  Engine
-	sed '3ipriority=900' minemeld-engine.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/engine.conf &&\
+	sed '3ipriority=900' minemeld-engine.supervisord.j2 | sed -E 's/(environment=.*)/\1,PYTHONPATH=\/opt\/minemeld\/engine\/current\/lib\/python2.7\/site-packages/'>/opt/minemeld/supervisor/config/conf.d/engine.conf &&\
 #  Web
 	sed '4istartsecs=20' minemeld-web.supervisord.j2 >/opt/minemeld/supervisor/config/conf.d/web.conf &&\
 # NGINX config file
