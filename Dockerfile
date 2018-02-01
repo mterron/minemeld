@@ -31,11 +31,11 @@ RUN clear &&\
     echo -n -e "\e[0;32m- Install python dependencies\e[0m" &&\
 	apk -q --progress add python2 py-libxml2 py2-certifi py2-click py2-crypto py2-cryptography py2-dateutil py2-dicttoxml py2-flask py2-flask-oauthlib py2-flask-wtf py2-gevent py2-greenlet py2-gunicorn py2-lxml py2-lz4 py2-mock py2-netaddr py2-netaddr py2-openssl py2-pip py2-psutil py2-redis py2-sphinx py2-sphinx_rtd_theme py2-sphinxcontrib-websupport py2-tz py2-urllib3 py2-yaml &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-	echo -e "\e[0;32m- Get prototypes...\e[0m" &&\
-	cd /tmp &&\
-	git clone https://github.com/PaloAltoNetworks/minemeld-node-prototypes.git &&\
+	echo -n -e "\e[0;32m- Get node prototypes\e[0m" &&\
+#	git clone https://github.com/PaloAltoNetworks/minemeld-node-prototypes.git &&\
+	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-node-prototypes/archive/${MINEMELD_CORE_VERSION}.tar.gz" | tar xzf - -C /tmp/ &&\
 	mkdir -p /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
-	mv minemeld-node-prototypes/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
+	mv /tmp/minemeld-node-prototypes-"$MINEMELD_CORE_VERSION"/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
     ln -sn /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" /opt/minemeld/prototypes/current &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get MineMeld-Core\e[0m" &&\
@@ -193,7 +193,6 @@ RUN	echo -e "\e[0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
 	cp /opt/minemeld/local/certs/minemeld.pem /etc/nginx &&\
 	mv /opt/minemeld/www/minemeld-web.nginx.conf /etc/nginx/conf.d/default.conf &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-#	touch /opt/minemeld/local/config/api/feeds.htpasswd &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
@@ -202,13 +201,14 @@ COPY bundle.crt /opt/minemeld/local/certs/
 
 # Apply correct ownership
 RUN	echo -n -e "\e[0;32m- Fixing permissions\e[0m" &&\
+	touch /opt/minemeld/local/config/api/feeds.htpasswd &&\
 	mkdir -m 0755 -p /var/run/minemeld/ &&\
 	chown -R minemeld: /var/run/minemeld &&\
 	cd /opt &&\
 	find . -user root -exec chown minemeld:minemeld {} + &&\
 	chown -R rabbitmq: /var/lib/rabbitmq /var/log/rabbitmq /usr/lib/rabbitmq &&\
 	chmod 0644 /etc/collectd/collectd.conf &&\
-#	chmod 0600 /opt/minemeld/local/certs/*.pem &&\
+	chmod 0600 /opt/minemeld/local/certs/* &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
