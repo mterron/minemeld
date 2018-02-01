@@ -185,14 +185,14 @@ RUN	echo -e "\e[0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
 	echo -n -e "\e[0;32m- Install web server\e[0m" &&\
 	apk -q --no-cache --progress add nginx &&\
 	mkdir -p /var/run/nginx &&\
+	echo ' * Disable NGINX global ssl session cache'  &&\
+	sed -i 's/ssl_session_cache.*//' /etc/nginx/nginx.conf &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Copy certificates to NGINX directory\e[0m" &&\
 	cp /opt/minemeld/local/certs/minemeld.cer /etc/nginx &&\
 	cp /opt/minemeld/local/certs/minemeld.pem /etc/nginx &&\
 	mv /opt/minemeld/www/minemeld-web.nginx.conf /etc/nginx/conf.d/default.conf &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-	echo ' * Disable NGINX global ssl session cache'  &&\
-	sed -i 's/ssl_session_cache.*//' /etc/nginx/nginx.conf &&\
 #	touch /opt/minemeld/local/config/api/feeds.htpasswd &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
@@ -223,7 +223,7 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 # Create prestart script to fix GRSEC errors
 	echo -e "#!/bin/sh\nsetfattr -n user.pax.flags -v E $(which python) /usr/lib/libffi.so.6.0.4 >/dev/null" >/usr/local/bin/prestart.sh &&\
 	chmod +x /usr/local/bin/* &&\
-	apk -q --no-cache add attr &&\
+	apk -q --no-cache add attr jq &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
@@ -231,5 +231,6 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 COPY redis.conf /etc/
 # Add Containerpilot config file
 COPY minemeld.json5 /etc/
+ENV PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages
 
 ENTRYPOINT ["containerpilot", "-config", "/etc/minemeld.json5"]
