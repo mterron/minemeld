@@ -144,6 +144,7 @@ RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 	rm -rf /tmp/* &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
+
 ##########################################################################################
 # WEB UI
 ##########################################################################################
@@ -170,6 +171,8 @@ RUN	echo -e "\e[0;32mINSTALL WEB UI\e[0m" &&\
     nsp check &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Gulp build...\e[0m" &&\
+# As per https://www.hurricanelabs.com/images/minemeld_user_guide.pdf
+	npm --quiet install --save lodash._reinterpolate &&\
     gulp build &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	ln -s "/opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION}/dist" /opt/minemeld/www/current &&\
@@ -182,7 +185,7 @@ RUN	echo -e "\e[0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
 	echo -n -e "\e[0;32m- Install webapp webserver dependencies\e[0m" &&\
 	apk --no-cache -q --progress add py2-gunicorn py2-passlib py-flask-passlib py2-flask-login py-rrd &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-	echo -n -e "\e[0;32m- Install web server\e[0m" &&\
+	echo -e "\e[0;32m- Install web server...\e[0m" &&\
 	apk -q --no-cache --progress add nginx &&\
 	mkdir -p /var/run/nginx &&\
 	echo ' * Disable NGINX global ssl session cache'  &&\
