@@ -30,7 +30,6 @@
 		{
 			name: "startup",
 			exec: "prestart.sh",
-			// exec: "chown -R rabbitmq: /usr/lib/rabbitmq && collectd -t -C /etc/collectd/collectd.conf 2>&1 >/dev/null && echo 'Collectd config OK'",
 			restarts: "never"
 		},
 		{
