@@ -1,8 +1,7 @@
 FROM alpine:latest
 
-ARG	MINEMELD_CORE_VERSION=0.9.44.post1
-ARG	MINEMELD_UI_VERSION=0.9.44
-
+ARG	MINEMELD_CORE_VERSION=0.9.46
+ARG	MINEMELD_UI_VERSION=0.9.46
 
 RUN clear &&\
 	echo -e "\n PaloAlto" &&\
@@ -26,13 +25,13 @@ RUN clear &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories &&\
 	echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories &&\
 	apk -U -q add apk-tools@edge &&\
+	apk -q upgrade &&\
 	apk -q --progress add c-ares ca-certificates curl openssl collectd collectd-rrdtool collectd-utils cython erlang-asn1 erlang-public-key git file leveldb libffi librrd libssl1.0 libxml2 libxslt p7zip rabbitmq-server redis snappy su-exec supervisor tzdata &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
     echo -n -e "\e[0;32m- Install python dependencies\e[0m" &&\
 	apk -q --progress add python2 py-libxml2 py2-certifi py2-click py2-crypto py2-cryptography py2-dateutil py2-dicttoxml py2-flask py2-flask-oauthlib py2-flask-wtf py2-gevent py2-greenlet py2-gunicorn py2-lxml py2-lz4 py2-mock py2-netaddr py2-netaddr py2-openssl py2-pip py2-psutil py2-redis py2-sphinx py2-sphinx_rtd_theme py2-sphinxcontrib-websupport py2-tz py2-urllib3 py2-yaml &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get node prototypes\e[0m" &&\
-#	git clone https://github.com/PaloAltoNetworks/minemeld-node-prototypes.git &&\
 	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-node-prototypes/archive/${MINEMELD_CORE_VERSION}.tar.gz" | tar xzf - -C /tmp/ &&\
 	mkdir -p /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
 	mv /tmp/minemeld-node-prototypes-"$MINEMELD_CORE_VERSION"/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
@@ -52,13 +51,13 @@ RUN clear &&\
 	sed -i 's/greenlet/greenlet==0.4.7/' /opt/minemeld/engine/core/requirements* &&\
 	sed -i 's/amqp/amqp==1.4.6/' /opt/minemeld/engine/core/requirements* &&\
 	sed -i 's/gevent/gevent==1.0.2/' /opt/minemeld/engine/core/requirements* &&\
-	pip install -q -r /opt/minemeld/engine/core/requirements.txt &&\
+	pip install -qq -r /opt/minemeld/engine/core/requirements.txt &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Install web requirements\e[0m" &&\
-	pip install -q -r /opt/minemeld/engine/core/requirements-web.txt &&\
+	pip install -qq -r /opt/minemeld/engine/core/requirements-web.txt &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Install dev requirements\e[0m" &&\
-	pip install -q -r /opt/minemeld/engine/core/requirements-dev.txt &&\
+	pip install -qq -r /opt/minemeld/engine/core/requirements-dev.txt &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Install engine...\e[0m" &&\
 	mkdir -p -m 0775 /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/lib/python2.7/site-packages &&\
@@ -69,7 +68,6 @@ RUN clear &&\
 # Cleanup
 	rm -rf /tmp/* /var/cache/apk/* &&\
 	apk -q del --purge DEV
-
 
 RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
 	export PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages &&\
@@ -87,6 +85,7 @@ RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
 #	mm-cacert-merge --config /opt/minemeld/local/certs/cacert-merge-config.yml --dst /opt/minemeld/local/certs/bundle.crt /opt/minemeld/local/certs/site/ &&\
 #	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
+
 #########################################################################################
 # MISCELLANEOUS FILES
 #########################################################################################
@@ -181,6 +180,9 @@ RUN	echo -e "\e[0;32mINSTALL WEB UI\e[0m" &&\
 	apk -q --no-cache del --purge DEV_WEBUI &&\
 	echo -e "------------------------------------------------------------------------------"
 
+##########################################################################################
+# Web Server
+##########################################################################################
 RUN	echo -e "\e[0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
 	echo -n -e "\e[0;32m- Install webapp webserver dependencies\e[0m" &&\
 	apk --no-cache -q --progress add py2-gunicorn py2-passlib py-flask-passlib py2-flask-login py-rrd &&\
@@ -215,7 +217,10 @@ RUN	echo -n -e "\e[0;32m- Fixing permissions\e[0m" &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
-ARG	CONTAINERPILOT_VERSION=3.6.2
+##########################################################################################
+# CONTAINERPILOT
+##########################################################################################
+ARG	CONTAINERPILOT_VERSION=3.8.0
 RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	curl -sSL "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz" | tar xzf - -C /usr/local/bin &&\
 # Create healthcheck scripts for Containerpilot
@@ -233,7 +238,10 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 # Add Redis configuration files
 COPY redis.conf /etc/
 # Add Containerpilot config file
-COPY minemeld.json5 /etc/
+COPY containerpilot.json5 /etc/
+
 ENV PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages
 
-ENTRYPOINT ["containerpilot", "-config", "/etc/minemeld.json5"]
+ENTRYPOINT ["containerpilot", "-config", "/etc/containerpilot.json5"]
+
+COPY Dockerfile /etc/
