@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 ARG	MINEMELD_CORE_VERSION=0.9.48.post1
-ARG	MINEMELD_UI_VERSION=0.9.48.post1
+ARG	MINEMELD_UI_VERSION=0.9.48
 
 RUN clear &&\
 	echo -e "\n PaloAlto" &&\
