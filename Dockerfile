@@ -1,9 +1,9 @@
 FROM alpine:latest
 
 ARG	MINEMELD_CORE_VERSION=0.9.48.post1
-ARG	MINEMELD_UI_VERSION=0.9.48
+ARG	MINEMELD_VERSION=0.9.48
 
-RUN clear &&\
+RUN	clear &&\
 	echo -e "\n PaloAlto" &&\
 	echo -e "\e[1;33m    /|    //||     _                    /|    //||              //      //\e[0m" &&\
 	echo -e "\e[1;33m   //|   // ||    (_)   __     ___     //|   // ||     ___     //  ___ //\e[0m" &&\
@@ -15,12 +15,12 @@ RUN clear &&\
 	echo -e "------------------------------------------------------------------------------" &&\
 	echo -e "\e[0;32mINSTALL MINEMELD ENGINE\e[0m" &&\
 	echo -n -e "\e[0;32m- Create minemeld user\e[0m" &&\
-    adduser minemeld -s /bin/false -D &&\
+	adduser minemeld -s /bin/false -D &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-    echo -n -e "\e[0;32m- Create directories\e[0m" &&\
-    mkdir -p -m 0775 /opt/minemeld/engine /opt/minemeld/local /opt/minemeld/log /opt/minemeld/prototypes /opt/minemeld/supervisor /opt/minemeld/www /opt/minemeld/local/certs /opt/minemeld/local/config /opt/minemeld/local/data /opt/minemeld/local/library /opt/minemeld/local/prototypes /opt/minemeld/local/config/traced /opt/minemeld/local/config/api /opt/minemeld/local/trace /opt/minemeld/supervisor/config/conf.d &&\
+	echo -n -e "\e[0;32m- Create directories\e[0m" &&\
+    	mkdir -p -m 0775 /opt/minemeld/engine /opt/minemeld/local /opt/minemeld/log /opt/minemeld/prototypes /opt/minemeld/supervisor /opt/minemeld/www /opt/minemeld/local/certs /opt/minemeld/local/config /opt/minemeld/local/data /opt/minemeld/local/library /opt/minemeld/local/prototypes /opt/minemeld/local/config/traced /opt/minemeld/local/config/api /opt/minemeld/local/trace /opt/minemeld/supervisor/config/conf.d &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-    echo -n -e "\e[0;32m- Install dependencies & Infrastructure\e[0m" &&\
+	echo -n -e "\e[0;32m- Install dependencies & Infrastructure\e[0m" &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories &&\
 	echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories &&\
@@ -28,14 +28,14 @@ RUN clear &&\
 	apk -q upgrade &&\
 	apk -q --progress add c-ares ca-certificates curl openssl collectd collectd-rrdtool collectd-utils cython erlang-asn1 erlang-public-key git file leveldb libffi librrd libssl1.0 libxml2 libxslt p7zip rabbitmq-server redis snappy su-exec supervisor tzdata &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-    echo -n -e "\e[0;32m- Install python dependencies\e[0m" &&\
+	echo -n -e "\e[0;32m- Install python dependencies\e[0m" &&\
 	apk -q --progress add python2 py-libxml2 py2-certifi py2-click py2-crypto py2-cryptography py2-dateutil py2-dicttoxml py2-flask py2-flask-oauthlib py2-flask-wtf py2-gevent py2-greenlet py2-gunicorn py2-lxml py2-lz4 py2-mock py2-netaddr py2-netaddr py2-openssl py2-pip py2-psutil py2-redis py2-sphinx py2-sphinx_rtd_theme py2-sphinxcontrib-websupport py2-tz py2-urllib3 py2-yaml &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get node prototypes\e[0m" &&\
-	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-node-prototypes/archive/${MINEMELD_CORE_VERSION}.tar.gz" | tar xzf - -C /tmp/ &&\
+	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-node-prototypes/archive/${MINEMELD_VERSION}.tar.gz" | tar xzf - -C /tmp/ &&\
 	mkdir -p /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
 	mv /tmp/minemeld-node-prototypes-"$MINEMELD_CORE_VERSION"/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
-    ln -sn /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" /opt/minemeld/prototypes/current &&\
+	ln -sn /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" /opt/minemeld/prototypes/current &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get MineMeld-Core\e[0m" &&\
 	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-core/archive/${MINEMELD_CORE_VERSION}.tar.gz" | tar xzf - -C /opt/minemeld/engine/ &&\
@@ -63,7 +63,7 @@ RUN clear &&\
 	mkdir -p -m 0775 /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/lib/python2.7/site-packages &&\
 	PYTHONPATH=/opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/lib/python2.7/site-packages pip install -e /opt/minemeld/engine/core --prefix=/opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
 	chown -R minemeld:minemeld /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
-    ln -sn /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" /opt/minemeld/engine/current &&\
+	ln -sn /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" /opt/minemeld/engine/current &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 # Cleanup
 	rm -rf /tmp/* /var/cache/apk/* &&\
@@ -152,31 +152,31 @@ RUN	echo -e "\e[0;32mINSTALL WEB UI\e[0m" &&\
 	apk -q --progress add --no-cache -t DEV_WEBUI nodejs nodejs-npm g++ libsass libsass-dev make &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get MineMeld-WebUI\e[0m" &&\
-    mkdir -p /var/www/webui &&\
-    curl -sSL https://github.com/PaloAltoNetworks/minemeld-webui/archive/${MINEMELD_UI_VERSION}.tar.gz | tar xzf - -C /opt/minemeld/www &&\
+	mkdir -p /var/www/webui &&\
+	curl -sSL https://github.com/PaloAltoNetworks/minemeld-webui/archive/${MINEMELD_VERSION}.tar.gz | tar xzf - -C /opt/minemeld/www &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Install npm packages...\e[0m" &&\
-    cd  /opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION} &&\
-    npm --quiet install &&\
+	cd  /opt/minemeld/www/minemeld-webui-${MINEMELD_VERSION} &&\
+	npm --quiet install &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Install Bower components...\e[0m" &&\
-	export PATH="$PATH:/opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION}/node_modules/.bin/" &&\
-    bower install --allow-root &&\
+	export PATH="$PATH:/opt/minemeld/www/minemeld-webui-${MINEMELD_VERSION}/node_modules/.bin/" &&\
+	bower install --allow-root &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Installing typings...\e[0m" &&\
-    typings install &&\
+	typings install &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-    echo -e "\e[0;32m- Checking for vulnerabilitiess...\e[0m" &&\
-    nsp check &&\
+	echo -e "\e[0;32m- Checking for vulnerabilitiess...\e[0m" &&\
+	nsp check &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Gulp build...\e[0m" &&\
 # As per https://www.hurricanelabs.com/images/minemeld_user_guide.pdf
 	npm --quiet install --save lodash._reinterpolate &&\
-    gulp build &&\
+	gulp build &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-	ln -s "/opt/minemeld/www/minemeld-webui-${MINEMELD_UI_VERSION}/dist" /opt/minemeld/www/current &&\
+	ln -s "/opt/minemeld/www/minemeld-webui-${MINEMELD_VERSION}/dist" /opt/minemeld/www/current &&\
 # Cleanup
-    rm -rf /tmp/* &&\
+	rm -rf /tmp/* &&\
 	apk -q --no-cache del --purge DEV_WEBUI &&\
 	echo -e "------------------------------------------------------------------------------"
 
