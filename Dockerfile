@@ -48,7 +48,7 @@ RUN	clear &&\
 	echo -n -e "\e[0;32m- Install engine requirements\e[0m" &&\
 	sed -i 's/==.*//g' /opt/minemeld/engine/core/requirements* &&\
 	sed -i 's/antlr4-python2-runtime/antlr4-python2-runtime==4.5.2/' /opt/minemeld/engine/core/requirements* &&\
-	sed -i 's/greenlet/greenlet==0.4.7/' /opt/minemeld/engine/core/requirements* &&\
+	sed -i 's/greenlet/greenlet>=0.4.7/' /opt/minemeld/engine/core/requirements* &&\
 	sed -i 's/amqp/amqp==1.4.6/' /opt/minemeld/engine/core/requirements* &&\
 	sed -i 's/gevent/gevent==1.0.2/' /opt/minemeld/engine/core/requirements* &&\
 	pip install -qq -r /opt/minemeld/engine/core/requirements.txt &&\
