@@ -11,7 +11,7 @@ RUN	clear &&\
 	echo -e "\e[1;33m //  | //   ||  / / //   // //       //  | //   ||  //       // //   //\e[0m" &&\
 	echo -e "\e[1;33m//   |//    || / / //   // ((____   //   |//    || ((____   // ((___//\e[0m" &&\
 	echo -e "\n\n" &&\
-	echo -e "CORE VERSION: $MINEMELD_CORE_VERSION\nUI VERSION: $MINEMELD_UI_VERSION" &&\
+	echo -e "CORE VERSION: $MINEMELD_CORE_VERSION\nUI VERSION: $MINEMELD_VERSION" &&\
 	echo -e "------------------------------------------------------------------------------" &&\
 	echo -e "\e[0;32mINSTALL MINEMELD ENGINE\e[0m" &&\
 	echo -n -e "\e[0;32m- Create minemeld user\e[0m" &&\
