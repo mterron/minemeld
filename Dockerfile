@@ -11,7 +11,7 @@ RUN	clear &&\
 	echo -e "\e[1;33m //  | //   ||  / / //   // //       //  | //   ||  //       // //   //\e[0m" &&\
 	echo -e "\e[1;33m//   |//    || / / //   // ((____   //   |//    || ((____   // ((___//\e[0m" &&\
 	echo -e "\n\n" &&\
-	echo -e "CORE VERSION: $MINEMELD_CORE_VERSION\nUI VERSION: $MINEMELD_VERSION" &&\
+	echo -e "CORE VERSION: $MINEMELD_CORE_VERSION\nPROTOTYPES VERSION: $MINEMELD_VERSION\nUI VERSION: $MINEMELD_VERSION" &&\
 	echo -e "------------------------------------------------------------------------------" &&\
 	echo -e "\e[0;32mINSTALL MINEMELD ENGINE\e[0m" &&\
 	echo -n -e "\e[0;32m- Create minemeld user\e[0m" &&\
@@ -33,9 +33,9 @@ RUN	clear &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get node prototypes\e[0m" &&\
 	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-node-prototypes/archive/${MINEMELD_VERSION}.tar.gz" | tar xzf - -C /tmp/ &&\
-	mkdir -p /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
-	mv /tmp/minemeld-node-prototypes-"$MINEMELD_CORE_VERSION"/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" &&\
-	ln -sn /opt/minemeld/prototypes/"$MINEMELD_CORE_VERSION" /opt/minemeld/prototypes/current &&\
+	mkdir -p /opt/minemeld/prototypes/"$MINEMELD_VERSION" &&\
+	mv /tmp/minemeld-node-prototypes-"$MINEMELD_VERSION"/prototypes/* /opt/minemeld/prototypes/"$MINEMELD_VERSION" &&\
+	ln -sn /opt/minemeld/prototypes/"$MINEMELD_VERSION" /opt/minemeld/prototypes/current &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get MineMeld-Core\e[0m" &&\
 	curl -sSL "https://github.com/PaloAltoNetworks/minemeld-core/archive/${MINEMELD_CORE_VERSION}.tar.gz" | tar xzf - -C /opt/minemeld/engine/ &&\
