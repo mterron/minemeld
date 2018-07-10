@@ -26,7 +26,7 @@ RUN	clear &&\
 	echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories &&\
 	apk -U -q add apk-tools@edge &&\
 	apk -q upgrade &&\
-	apk -q --progress add c-ares ca-certificates curl openssl collectd collectd-rrdtool collectd-utils cython erlang-asn1 erlang-public-key git file leveldb libffi librrd libssl1.0 libxml2 libxslt p7zip rabbitmq-server redis snappy su-exec supervisor tzdata &&\
+	apk -q --progress add jq c-ares ca-certificates curl openssl collectd collectd-rrdtool collectd-utils cython erlang-asn1 erlang-public-key git file leveldb libffi librrd libssl1.0 libxml2 libxslt p7zip rabbitmq-server redis snappy su-exec supervisor tzdata &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Install python dependencies\e[0m" &&\
 	apk -q --progress add python2 py-libxml2 py2-certifi py2-click py2-crypto py2-cryptography py2-dateutil py2-dicttoxml py2-flask py2-flask-oauthlib py2-flask-wtf py2-gevent py2-greenlet py2-gunicorn py2-lxml py2-lz4 py2-mock py2-netaddr py2-netaddr py2-openssl py2-pip py2-psutil py2-redis py2-sphinx py2-sphinx_rtd_theme py2-sphinxcontrib-websupport py2-tz py2-urllib3 py2-yaml &&\
