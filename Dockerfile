@@ -246,3 +246,6 @@ ENV PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages
 ENTRYPOINT ["containerpilot", "-config", "/etc/containerpilot.json5"]
 
 COPY Dockerfile /etc/
+
+EXPOSE 443
+
