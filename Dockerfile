@@ -161,6 +161,7 @@ RUN	echo -e "\e[0;32mINSTALL WEB UI\e[0m" &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Install Bower components...\e[0m" &&\
 	export PATH="$PATH:/opt/minemeld/www/minemeld-webui-${MINEMELD_VERSION}/node_modules/.bin/" &&\
+	sh -c "{ rm .bowerrc;jq '.registry=\"https://registry.bower.io\"' > .bowerrc; } < .bowerrc" &&\
 	bower install --allow-root &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Installing typings...\e[0m" &&\
