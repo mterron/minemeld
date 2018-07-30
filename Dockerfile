@@ -248,4 +248,3 @@ ENTRYPOINT ["containerpilot", "-config", "/etc/containerpilot.json5"]
 COPY Dockerfile /etc/
 
 EXPOSE 443
-

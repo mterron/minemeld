@@ -34,7 +34,7 @@
 		},
 		{
 			name: "redis",
-			exec: "redis-server /etc/redis.conf",
+			exec: "su-exec redis:minemeld redis-server /etc/redis.conf",
 			restarts: "unlimited",
 			when: {
 				source: "startup",
@@ -79,7 +79,7 @@
 		},
 		{
 			name: "minemeld",
-			exec: "supervisord -n -c /opt/minemeld/supervisor/config/supervisord.conf --pidfile /var/run/minemeld/minemeld.pid",
+			exec: "su-exec minemeld: supervisord -n -c /opt/minemeld/supervisor/config/supervisord.conf --pidfile /var/run/minemeld/minemeld.pid",
 			restarts: "never",
 			stopTimeout: "60s",
 			when: {
