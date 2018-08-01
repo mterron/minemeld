@@ -18,7 +18,7 @@ RUN	clear &&\
 	adduser minemeld -s /bin/false -D &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Create directories\e[0m" &&\
-    	mkdir -p -m 0775 /opt/minemeld/engine /opt/minemeld/local /opt/minemeld/log /opt/minemeld/prototypes /opt/minemeld/supervisor /opt/minemeld/www /opt/minemeld/local/certs /opt/minemeld/local/config /opt/minemeld/local/data /opt/minemeld/local/library /opt/minemeld/local/prototypes /opt/minemeld/local/config/traced /opt/minemeld/local/config/api /opt/minemeld/local/trace /opt/minemeld/supervisor/config/conf.d &&\
+	mkdir -p -m 0775 /opt/minemeld/engine /opt/minemeld/local /opt/minemeld/log /opt/minemeld/prototypes /opt/minemeld/supervisor /opt/minemeld/www /opt/minemeld/local/certs /opt/minemeld/local/config /opt/minemeld/local/data /opt/minemeld/local/library /opt/minemeld/local/prototypes /opt/minemeld/local/config/traced /opt/minemeld/local/config/api /opt/minemeld/local/trace /opt/minemeld/supervisor/config/conf.d &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Install dependencies & Infrastructure\e[0m" &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories &&\
@@ -62,16 +62,10 @@ RUN	clear &&\
 	echo -e "\e[0;32m- Install engine...\e[0m" &&\
 	mkdir -p -m 0775 /opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/lib/python2.7/site-packages &&\
 	PYTHONPATH=/opt/minemeld/engine/"$MINEMELD_CORE_VERSION"/lib/python2.7/site-packages pip install -e /opt/minemeld/engine/core --prefix=/opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
-	chown -R minemeld:minemeld /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" &&\
 	ln -sn /opt/minemeld/engine/"$MINEMELD_CORE_VERSION" /opt/minemeld/engine/current &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-# Cleanup
-	rm -rf /tmp/* /var/cache/apk/* &&\
-	apk -q del --purge DEV
-
-RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
+	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
 	export PYTHONPATH=/opt/minemeld/engine/current/lib/python2.7/site-packages &&\
-# This doesn't work. For some reason it doesn't see the system packages even though they are in the PYTHONPATH and can be imported by python
 	echo -e -n "\e[0;32m- Create extensions frigidaire\e[0m" &&\
 	mm-extensions-freeze /opt/minemeld/local/library /opt/minemeld/local/library/freeze.txt &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
@@ -84,12 +78,11 @@ RUN	export PATH=$PATH:/opt/minemeld/engine/current/bin &&\
 #	echo -n -e "\e[0;32m- Create CA bundle\e[0m" &&\
 #	mm-cacert-merge --config /opt/minemeld/local/certs/cacert-merge-config.yml --dst /opt/minemeld/local/certs/bundle.crt /opt/minemeld/local/certs/site/ &&\
 #	echo -e "\e[1;32m  ✔\e[0m" &&\
-	echo -e "------------------------------------------------------------------------------"
-
+	echo -e "------------------------------------------------------------------------------" &&\
 #########################################################################################
 # MISCELLANEOUS FILES
 #########################################################################################
-RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
+	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 	cd /tmp &&\
 	git clone https://github.com/PaloAltoNetworks/minemeld-ansible.git &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
@@ -137,19 +130,16 @@ RUN	echo -e "\e[0;32m- Get minemeld-ansible git repo...\e[0m" &&\
 # Certificates
 	mv minemeld-ansible/roles/minemeld/files/minemeld.cer /opt/minemeld/local/certs/ &&\
 	mv minemeld-ansible/roles/minemeld/files/minemeld.pem /opt/minemeld/local/certs/ &&\
-# Cleanup
 #	sed -i 's/command=\/opt\/minemeld\/engine\/current\/bin\/command=//' /opt/minemeld/supervisor/config/conf.d/*.conf &&\
 	sed -i 's/"//g' /opt/minemeld/supervisor/config/conf.d/*.conf &&\
-	rm -rf /tmp/* &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-	echo -e "------------------------------------------------------------------------------"
-
+	echo -e "------------------------------------------------------------------------------" &&\
 ##########################################################################################
 # WEB UI
 ##########################################################################################
-RUN	echo -e "\e[0;32mINSTALL WEB UI\e[0m" &&\
+	echo -e "\e[0;32mINSTALL WEB UI\e[0m" &&\
 	echo -n -e "\e[0;32m- Install web ui build dependencies\e[0m" &&\
-	apk -q --progress add --no-cache -t DEV_WEBUI nodejs nodejs-npm g++ libsass libsass-dev make &&\
+	apk -q --progress add -t DEV_WEBUI nodejs nodejs-npm g++ libsass libsass-dev make &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Get MineMeld-WebUI\e[0m" &&\
 	mkdir -p /var/www/webui &&\
@@ -176,20 +166,16 @@ RUN	echo -e "\e[0;32mINSTALL WEB UI\e[0m" &&\
 	gulp build &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	ln -s "/opt/minemeld/www/minemeld-webui-${MINEMELD_VERSION}/dist" /opt/minemeld/www/current &&\
-# Cleanup
-	rm -rf /tmp/* &&\
-	apk -q --no-cache del --purge DEV_WEBUI &&\
-	echo -e "------------------------------------------------------------------------------"
-
+	echo -e "------------------------------------------------------------------------------" &&\
 ##########################################################################################
 # Web Server
 ##########################################################################################
-RUN	echo -e "\e[0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
+	echo -e "\e[0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
 	echo -n -e "\e[0;32m- Install webapp webserver dependencies\e[0m" &&\
-	apk --no-cache -q --progress add py2-gunicorn py2-passlib py-flask-passlib py2-flask-login py-rrd &&\
+	apk -q --progress add py2-gunicorn py2-passlib py-flask-passlib py2-flask-login py-rrd &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Install web server...\e[0m" &&\
-	apk -q --no-cache --progress add nginx &&\
+	apk -q --progress add nginx &&\
 	mkdir -p /var/run/nginx &&\
 	echo ' * Disable NGINX global ssl session cache'  &&\
 	sed -i 's/ssl_session_cache.*//' /etc/nginx/nginx.conf &&\
@@ -199,19 +185,22 @@ RUN	echo -e "\e[0;32mINSTALL WEB SERVER INFRASTRUCTURE\e[0m" &&\
 	cp /opt/minemeld/local/certs/minemeld.pem /etc/nginx &&\
 	mv /opt/minemeld/www/minemeld-web.nginx.conf /etc/nginx/conf.d/default.conf &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
+	chown -R minemeld:minemeld /opt/minemeld &&\
+# Cleanup
+	rm -rf /tmp/* /var/cache/apk/* &&\
+	apk -q del --purge DEV DEV_WEBUI &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
 # Add CA bundle
-COPY bundle.crt /opt/minemeld/local/certs/
+COPY --chown=minemeld:minemeld bundle.crt /opt/minemeld/local/certs/
 
 # Apply correct ownership
 RUN	echo -n -e "\e[0;32m- Fixing permissions\e[0m" &&\
 	touch /opt/minemeld/local/config/api/feeds.htpasswd &&\
 	mkdir -m 0755 -p /var/run/minemeld/ &&\
-	chown -R minemeld: /var/run/minemeld &&\
-	cd /opt &&\
-	find . -user root -exec chown minemeld:minemeld {} + &&\
+	chown -R minemeld: /var/run/minemeld /opt/minemeld/local/config/api/feeds.htpasswd &&\
+#	chown -R minemeld:minemeld /opt/minemeld &&\
 	chown -R rabbitmq: /var/lib/rabbitmq /var/log/rabbitmq /usr/lib/rabbitmq &&\
 	chmod 0644 /etc/collectd/collectd.conf &&\
 	chmod 0600 /opt/minemeld/local/certs/* &&\
@@ -231,13 +220,13 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	echo -e "#!/bin/sh\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-engine 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-traced 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-web 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-supervisord-listener 2>&1 | grep -sq RUNNING" >/usr/local/bin/supervisor-healthcheck &&\
 # Create prestart script to fix GRSEC errors
 	echo -e "#!/bin/sh\nsetfattr -n user.pax.flags -v E $(which python) /usr/lib/libffi.so.6.0.4 >/dev/null" >/usr/local/bin/prestart.sh &&\
-	chmod +x /usr/local/bin/* &&\
+	chmod +x /usr/local/bin/containerpilot /usr/local/bin/*-healthcheck usr/local/bin/prestart.sh &&\
 	apk -q --no-cache add attr jq &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "------------------------------------------------------------------------------"
 
 # Add Redis configuration files
-COPY redis.conf /etc/
+COPY --chown=redis:redis redis.conf /etc/
 # Add Containerpilot config file
 COPY containerpilot.json5 /etc/
 
