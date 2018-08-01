@@ -213,13 +213,14 @@ RUN	echo -n -e "\e[0;32m- Fixing permissions\e[0m" &&\
 ARG	CONTAINERPILOT_VERSION=3.8.0
 RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	curl -sSL "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/containerpilot-${CONTAINERPILOT_VERSION}.tar.gz" | tar xzf - -C /usr/local/bin &&\
+	chown root: /usr/local/bin/containerpilot &&\
 # Create healthcheck scripts for Containerpilot
 	echo -e "#!/bin/sh\nredis-cli ping >/dev/null 2>&1" >/usr/local/bin/redis-healthcheck &&\
 	echo -e "#!/bin/sh\nrabbitmqctl node_health_check >/dev/null 2>&1" >/usr/local/bin/rabbitmq-healthcheck &&\
 	echo -e "#!/bin/sh\ncollectdctl -s \$(awk '/SocketFile/{ print substr(\$2,2,length(\$2)-2) }' /etc/collectd/collectd.conf) listval >/dev/null 2>&1" >/usr/local/bin/collectd-healthcheck &&\
 	echo -e "#!/bin/sh\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-engine 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-traced 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-web 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-supervisord-listener 2>&1 | grep -sq RUNNING" >/usr/local/bin/supervisor-healthcheck &&\
 # Create prestart script to fix GRSEC errors
-	echo -e "#!/bin/sh\nsetfattr -n user.pax.flags -v E $(which python) /usr/lib/libffi.so.6.0.4 >/dev/null" >/usr/local/bin/prestart.sh &&\
+	echo -e "#!/bin/sh\nsetfattr -n user.pax.flags -v E $(which python) /usr/lib/libffi.so.6.* >/dev/null" >/usr/local/bin/prestart.sh &&\
 	chmod +x /usr/local/bin/containerpilot /usr/local/bin/*-healthcheck usr/local/bin/prestart.sh &&\
 	apk -q --no-cache add attr jq &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
