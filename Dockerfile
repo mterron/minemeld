@@ -24,8 +24,6 @@ RUN	clear &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories &&\
 	echo '@edge http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories &&\
 	echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories &&\
-	apk -U -q add apk-tools@edge &&\
-	apk -q upgrade &&\
 	apk -q --progress add jq c-ares ca-certificates curl openssl collectd collectd-rrdtool collectd-utils cython erlang-asn1 erlang-public-key git file leveldb libffi librrd libssl1.1 libxml2 libxslt p7zip rabbitmq-server redis snappy su-exec supervisor tzdata &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -n -e "\e[0;32m- Install python dependencies\e[0m" &&\
@@ -157,9 +155,9 @@ RUN	clear &&\
 	echo -n -e "\e[0;32m- Installing typings...\e[0m" &&\
 	typings install &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
-	echo -e "\e[0;32m- Checking for vulnerabilitiess...\e[0m" &&\
-	nsp check &&\
-	echo -e "\e[1;32m  ✔\e[0m" &&\
+	#echo -e "\e[0;32m- Checking for vulnerabilitiess...\e[0m" &&\
+	#nsp check &&\
+	#echo -e "\e[1;32m  ✔\e[0m" &&\
 	echo -e "\e[0;32m- Gulp build...\e[0m" &&\
 # As per https://www.hurricanelabs.com/images/minemeld_user_guide.pdf
 	npm --quiet install --save lodash._reinterpolate &&\
@@ -220,7 +218,7 @@ RUN	echo -n -e "\e[0;32m- Install Containerpilot\e[0m" &&\
 	echo -e "#!/bin/sh\ncollectdctl -s \$(awk '/SocketFile/{ print substr(\$2,2,length(\$2)-2) }' /etc/collectd/collectd.conf) listval >/dev/null 2>&1" >/usr/local/bin/collectd-healthcheck &&\
 	echo -e "#!/bin/sh\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-engine 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-traced 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-web 2>&1 | grep -sq RUNNING\nsupervisorctl -c /opt/minemeld/supervisor/config/supervisord.conf status minemeld-supervisord-listener 2>&1 | grep -sq RUNNING" >/usr/local/bin/supervisor-healthcheck &&\
 # Create prestart script to fix GRSEC errors
-	echo -e "#!/bin/sh\nsetfattr -n user.pax.flags -v E $(which python) /usr/lib/libffi.so.6.* >/dev/null" >/usr/local/bin/prestart.sh &&\
+	echo -e "#!/bin/sh\n# DEPRECATED\nexit 0\n" >/usr/local/bin/prestart.sh &&\
 	chmod +x /usr/local/bin/containerpilot /usr/local/bin/*-healthcheck usr/local/bin/prestart.sh &&\
 	apk -q --no-cache add attr jq &&\
 	echo -e "\e[1;32m  ✔\e[0m" &&\
